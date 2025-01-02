@@ -12,6 +12,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.medicinereminder.ui.navigation.NavGraph
 import com.example.medicinereminder.ui.theme.MedicineReminderTheme
 import com.example.medicinereminder.viewmodel.MedicineViewModel
+import com.example.medicinereminder.viewmodel.ScheduleViewModel
 import com.example.medicinereminder.viewmodel.ViewModelFactory
 
 class MainActivity : ComponentActivity() {
@@ -23,6 +24,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private val medicineViewModel: MedicineViewModel by viewModels { viewModelFactory }
+    private val scheduleViewModel: ScheduleViewModel by viewModels { viewModelFactory }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,7 +37,8 @@ class MainActivity : ComponentActivity() {
                     val navController = rememberNavController()
                     NavGraph(
                         navController = navController,
-                        medicineViewModel = medicineViewModel
+                        medicineViewModel = medicineViewModel,
+                        scheduleViewModel = scheduleViewModel
                     )
                 }
             }

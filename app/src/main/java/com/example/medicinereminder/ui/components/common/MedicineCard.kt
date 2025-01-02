@@ -3,8 +3,11 @@ package com.example.medicinereminder.ui.components.common
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -14,7 +17,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.medicinereminder.data.entity.Medicine
@@ -28,8 +30,10 @@ fun MedicineCard(
     medicine: Medicine,
     onEditClick: () -> Unit,
     onDeleteClick: () -> Unit,
+    onSchedulesClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var showDeleteDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val imageStorage = ImageStorage(context)
 
@@ -47,6 +51,7 @@ fun MedicineCard(
         )
     ) {
         Column {
+            // Image section
             medicine.imageUri?.let { imagePath ->
                 val imageUri = imageStorage.getImageUri(imagePath)
                 Box(
@@ -54,7 +59,7 @@ fun MedicineCard(
                         .fillMaxWidth()
                         .height(200.dp)
                         .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
-                        .background(Color(0xFFF5F5F5)) // Light gray background for image container
+                        .background(Color(0xFFF5F5F5)) // Light gray background for image
                 ) {
                     AsyncImage(
                         model = ImageRequest.Builder(LocalContext.current)
@@ -69,13 +74,12 @@ fun MedicineCard(
                 }
             }
 
-            // Content section
+            // Medicine information section
             Column(
                 modifier = Modifier
                     .padding(20.dp)
                     .fillMaxWidth()
             ) {
-                // Title and Dosage
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -83,7 +87,7 @@ fun MedicineCard(
                 ) {
                     Text(
                         text = medicine.name,
-                        fontSize = 22.sp,
+                        style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF1A1A1A),
                         maxLines = 1,
@@ -97,7 +101,7 @@ fun MedicineCard(
                     ) {
                         Text(
                             text = medicine.dosage,
-                            fontSize = 16.sp,
+                            style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Medium,
                             color = MaterialTheme.colorScheme.onPrimaryContainer,
                             modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
@@ -105,16 +109,14 @@ fun MedicineCard(
                     }
                 }
 
-                // Instructions
                 medicine.instructions?.let { instructions ->
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
                         text = instructions,
-                        fontSize = 16.sp,
+                        style = MaterialTheme.typography.bodyLarge,
                         color = Color(0xFF666666),
                         maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                        lineHeight = 24.sp
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
 
@@ -122,7 +124,7 @@ fun MedicineCard(
                 Divider(color = Color(0xFFEEEEEE))
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Dates
+                // Dates section
                 val dateFormat = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -131,12 +133,12 @@ fun MedicineCard(
                     Column {
                         Text(
                             text = "Start Date",
-                            fontSize = 12.sp,
+                            style = MaterialTheme.typography.bodySmall,
                             color = Color(0xFF999999)
                         )
                         Text(
                             text = dateFormat.format(Date(medicine.startDate)),
-                            fontSize = 14.sp,
+                            style = MaterialTheme.typography.bodyMedium,
                             color = Color(0xFF333333),
                             fontWeight = FontWeight.Medium
                         )
@@ -145,12 +147,12 @@ fun MedicineCard(
                         Column(horizontalAlignment = Alignment.End) {
                             Text(
                                 text = "End Date",
-                                fontSize = 12.sp,
+                                style = MaterialTheme.typography.bodySmall,
                                 color = Color(0xFF999999)
                             )
                             Text(
                                 text = dateFormat.format(Date(endDate)),
-                                fontSize = 14.sp,
+                                style = MaterialTheme.typography.bodyMedium,
                                 color = Color(0xFF333333),
                                 fontWeight = FontWeight.Medium
                             )
@@ -158,38 +160,54 @@ fun MedicineCard(
                     }
                 }
 
-                // Action buttons
+                // Action buttons all in one row
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 20.dp),
+                        .padding(top = 16.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End)
                 ) {
-                    OutlinedButton(
-                        onClick = onEditClick,
-                        colors = ButtonDefaults.outlinedButtonColors(
+                    TextButton(
+                        onClick = onSchedulesClick,
+                        colors = ButtonDefaults.textButtonColors(
                             contentColor = MaterialTheme.colorScheme.primary
                         )
                     ) {
                         Text(
-                            "Edit",
+                            "Schedules",
                             fontWeight = FontWeight.Medium
                         )
                     }
-                    Button(
-                        onClick = onDeleteClick,
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFFFF5252),
-                            contentColor = Color.White
+
+                    IconButton(onClick = onEditClick) {
+                        Icon(
+                            Icons.Outlined.Edit,
+                            contentDescription = "Edit Medicine",
+                            tint = MaterialTheme.colorScheme.primary
                         )
-                    ) {
-                        Text(
-                            "Delete",
-                            fontWeight = FontWeight.Medium
+                    }
+
+                    IconButton(onClick = { showDeleteDialog = true }) {
+                        Icon(
+                            Icons.Outlined.Delete,
+                            contentDescription = "Delete Medicine",
+                            tint = MaterialTheme.colorScheme.error
                         )
                     }
                 }
             }
         }
+    }
+
+    if (showDeleteDialog) {
+        DeleteConfirmationDialog(
+            title = "Delete Medicine",
+            message = "Are you sure you want to delete this medicine? All associated schedules will also be deleted.",
+            onConfirm = {
+                onDeleteClick()
+                showDeleteDialog = false
+            },
+            onDismiss = { showDeleteDialog = false }
+        )
     }
 }

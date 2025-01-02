@@ -1,6 +1,5 @@
 package com.example.medicinereminder.data.repository
 
-import com.example.medicinereminder.data.dao.MedicineDao
 import com.example.medicinereminder.data.dao.ScheduleDao
 import com.example.medicinereminder.data.entity.Schedule
 import kotlinx.coroutines.flow.Flow
@@ -15,6 +14,10 @@ class ScheduleRepository(private val scheduleDao: ScheduleDao) {
         return scheduleDao.getSchedulesForMedicine(medicineId)
     }
 
+    suspend fun getScheduleById(id: Long): Schedule? {
+        return scheduleDao.getScheduleById(id)
+    }
+
     suspend fun insertSchedule(schedule: Schedule): Long {
         return scheduleDao.insertSchedule(schedule)
     }
@@ -27,14 +30,7 @@ class ScheduleRepository(private val scheduleDao: ScheduleDao) {
         scheduleDao.deleteSchedule(schedule)
     }
 
-    companion object {
-        @Volatile
-        private var instance: ScheduleRepository? = null
-
-        fun getInstance(scheduleDao: ScheduleDao): ScheduleRepository {
-            return instance ?: synchronized(this) {
-                instance ?: ScheduleRepository(scheduleDao).also { instance = it }
-            }
-        }
+    suspend fun deleteSchedulesForMedicine(medicineId: Long) {
+        scheduleDao.deleteSchedulesForMedicine(medicineId)
     }
 }

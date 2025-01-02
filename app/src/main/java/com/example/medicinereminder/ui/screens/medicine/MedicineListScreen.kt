@@ -11,7 +11,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -26,7 +25,8 @@ import com.example.medicinereminder.viewmodel.MedicineViewModel
 fun MedicineListScreen(
     medicineViewModel: MedicineViewModel,
     onAddClick: () -> Unit,
-    onEditClick: (Long) -> Unit
+    onEditClick: (Long) -> Unit,
+    onSchedulesClick: (Long, String) -> Unit
 ) {
     val uiState by medicineViewModel.uiState.collectAsState()
 
@@ -44,8 +44,7 @@ fun MedicineListScreen(
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                     titleContentColor = Color.White,
-                ),
-                modifier = Modifier.shadow(4.dp)
+                )
             )
         },
         floatingActionButton = {
@@ -56,9 +55,8 @@ fun MedicineListScreen(
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Add Medicine")
             }
-        },
-        containerColor = Color.White
-    ) { paddingValues ->
+        }
+    ) { padding ->
         when (uiState) {
             is MedicineUiState.Loading -> {
                 LoadingScreen()
@@ -72,8 +70,8 @@ fun MedicineListScreen(
                 ) {
                     LazyColumn(
                         contentPadding = PaddingValues(
-                            top = paddingValues.calculateTopPadding() + 16.dp,
-                            bottom = paddingValues.calculateBottomPadding() + 88.dp,
+                            top = padding.calculateTopPadding() + 16.dp,
+                            bottom = padding.calculateBottomPadding() + 88.dp,
                             start = 16.dp,
                             end = 16.dp
                         ),
@@ -83,7 +81,8 @@ fun MedicineListScreen(
                             MedicineCard(
                                 medicine = medicine,
                                 onEditClick = { onEditClick(medicine.id) },
-                                onDeleteClick = { medicineViewModel.deleteMedicine(medicine) }
+                                onDeleteClick = { medicineViewModel.deleteMedicine(medicine) },
+                                onSchedulesClick = { onSchedulesClick(medicine.id, medicine.name) }
                             )
                         }
                     }

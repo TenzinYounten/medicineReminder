@@ -6,10 +6,12 @@ import com.example.medicinereminder.data.entity.Schedule
 import com.example.medicinereminder.data.entity.RepeatType
 import com.example.medicinereminder.data.repository.ScheduleRepository
 import com.example.medicinereminder.ui.state.ScheduleUiState
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class ScheduleViewModel(
     private val scheduleRepository: ScheduleRepository
@@ -20,10 +22,6 @@ class ScheduleViewModel(
 
     private val _selectedSchedule = MutableStateFlow<Schedule?>(null)
     val selectedSchedule: StateFlow<Schedule?> = _selectedSchedule.asStateFlow()
-
-    init {
-        loadSchedules()
-    }
 
     fun loadSchedules() {
         viewModelScope.launch {
@@ -51,6 +49,12 @@ class ScheduleViewModel(
         }
     }
 
+    suspend fun getScheduleById(scheduleId: Long): Schedule? {
+        return withContext(Dispatchers.IO) {
+            scheduleRepository.getScheduleById(scheduleId)
+        }
+    }
+
     fun addSchedule(
         medicineId: Long,
         time: Long,
@@ -68,6 +72,7 @@ class ScheduleViewModel(
                     lastTriggeredTime = null
                 )
                 scheduleRepository.insertSchedule(schedule)
+                getSchedulesForMedicine(medicineId)
             } catch (e: Exception) {
                 _uiState.value = ScheduleUiState.Error(e.message ?: "Failed to add schedule")
             }
@@ -78,6 +83,7 @@ class ScheduleViewModel(
         viewModelScope.launch {
             try {
                 scheduleRepository.updateSchedule(schedule)
+                getSchedulesForMedicine(schedule.medicineId)
             } catch (e: Exception) {
                 _uiState.value = ScheduleUiState.Error(e.message ?: "Failed to update schedule")
             }
@@ -88,6 +94,7 @@ class ScheduleViewModel(
         viewModelScope.launch {
             try {
                 scheduleRepository.deleteSchedule(schedule)
+                getSchedulesForMedicine(schedule.medicineId)
             } catch (e: Exception) {
                 _uiState.value = ScheduleUiState.Error(e.message ?: "Failed to delete schedule")
             }
@@ -99,18 +106,11 @@ class ScheduleViewModel(
             try {
                 val updatedSchedule = schedule.copy(isActive = !schedule.isActive)
                 scheduleRepository.updateSchedule(updatedSchedule)
+                getSchedulesForMedicine(schedule.medicineId)
             } catch (e: Exception) {
                 _uiState.value = ScheduleUiState.Error(e.message ?: "Failed to toggle schedule")
             }
         }
-    }
-
-    fun selectSchedule(schedule: Schedule) {
-        _selectedSchedule.value = schedule
-    }
-
-    fun clearSelectedSchedule() {
-        _selectedSchedule.value = null
     }
 
     fun updateNextTriggerTime(schedule: Schedule, nextTriggerTime: Long) {
@@ -121,6 +121,7 @@ class ScheduleViewModel(
                     lastTriggeredTime = System.currentTimeMillis()
                 )
                 scheduleRepository.updateSchedule(updatedSchedule)
+                getSchedulesForMedicine(schedule.medicineId)
             } catch (e: Exception) {
                 _uiState.value = ScheduleUiState.Error(e.message ?: "Failed to update trigger time")
             }
