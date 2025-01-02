@@ -92,4 +92,17 @@ class MedicineViewModel(
     fun clearSelectedMedicine() {
         _selectedMedicine.value = null
     }
+
+    fun loadMedicineById(id: Long) {
+        viewModelScope.launch {
+            try {
+                medicineRepository.getMedicineById(id)
+                    .collect { medicine ->
+                        _selectedMedicine.value = medicine
+                    }
+            } catch (e: Exception) {
+                _uiState.value = MedicineUiState.Error(e.message ?: "Failed to load medicine")
+            }
+        }
+    }
 }

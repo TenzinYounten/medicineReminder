@@ -37,6 +37,7 @@ android {
 dependencies {
     implementation(libs.androidx.navigation.runtime.ktx)
     implementation(libs.androidx.navigation.compose)
+    implementation(libs.volley)
     val composeBomVersion = "2024.02.00"
     val roomVersion = "2.6.1"
 
@@ -63,4 +64,6 @@ dependencies {
 
     // ViewModel
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
+
+    implementation("io.coil-kt:coil-compose:2.5.0")
 }

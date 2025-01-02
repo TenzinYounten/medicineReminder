@@ -11,6 +11,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.example.medicinereminder.data.entity.Medicine
 import com.example.medicinereminder.ui.components.common.ImagePicker
 import com.example.medicinereminder.util.ImageStorage
 import com.example.medicinereminder.viewmodel.MedicineViewModel
@@ -18,24 +19,45 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddMedicineScreen(
+fun EditMedicineScreen(
+    medicineId: Long,
     medicineViewModel: MedicineViewModel,
     onNavigateBack: () -> Unit
 ) {
-    var name by remember { mutableStateOf("") }
-    var dosage by remember { mutableStateOf("") }
-    var instructions by remember { mutableStateOf("") }
-    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
-
+    val medicine by medicineViewModel.selectedMedicine.collectAsState()
     val context = LocalContext.current
     val imageStorage = remember { ImageStorage(context) }
     val coroutineScope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
 
+    var name by remember { mutableStateOf("") }
+    var dosage by remember { mutableStateOf("") }
+    var instructions by remember { mutableStateOf("") }
+    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+    var originalImagePath by remember { mutableStateOf<String?>(null) }
+
+    // Load medicine data when it becomes available
+    LaunchedEffect(medicineId) {
+        medicineViewModel.loadMedicineById(medicineId)
+    }
+
+    // Update local state when medicine data changes
+    LaunchedEffect(medicine) {
+        medicine?.let {
+            name = it.name
+            dosage = it.dosage
+            instructions = it.instructions ?: ""
+            originalImagePath = it.imageUri
+            if (it.imageUri != null) {
+                selectedImageUri = imageStorage.getImageUri(it.imageUri)
+            }
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Add New Medicine") },
+                title = { Text("Edit Medicine") },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
@@ -56,7 +78,9 @@ fun AddMedicineScreen(
         ) {
             ImagePicker(
                 imageUri = selectedImageUri,
-                onImagePicked = { selectedImageUri = it }
+                onImagePicked = { uri ->
+                    selectedImageUri = uri
+                }
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -92,25 +116,36 @@ fun AddMedicineScreen(
             Button(
                 onClick = {
                     coroutineScope.launch {
-                        val imagePath = selectedImageUri?.let {
-                            imageStorage.saveImage(it)
-                        }
+                        medicine?.let { currentMedicine ->
+                            // Handle image update
+                            val newImagePath = when {
+                                selectedImageUri == null -> null // Image removed
+                                selectedImageUri == originalImagePath?.let { imageStorage.getImageUri(it) } ->
+                                    originalImagePath // Image unchanged
+                                else -> selectedImageUri?.let { imageStorage.saveImage(it) } // New image
+                            }
 
-                        medicineViewModel.addMedicine(
-                            name = name,
-                            imageUri = imagePath,
-                            dosage = dosage,
-                            instructions = if (instructions.isBlank()) null else instructions,
-                            startDate = System.currentTimeMillis(),
-                            endDate = null
-                        )
-                        onNavigateBack()
+                            // Delete old image if it's being replaced or removed
+                            if (originalImagePath != null && originalImagePath != newImagePath) {
+                                imageStorage.deleteImage(originalImagePath!!)
+                            }
+
+                            val updatedMedicine = currentMedicine.copy(
+                                name = name,
+                                imageUri = newImagePath,
+                                dosage = dosage,
+                                instructions = if (instructions.isBlank()) null else instructions,
+                                updatedAt = System.currentTimeMillis()
+                            )
+                            medicineViewModel.updateMedicine(updatedMedicine)
+                            onNavigateBack()
+                        }
                     }
                 },
                 modifier = Modifier.fillMaxWidth(),
                 enabled = name.isNotBlank() && dosage.isNotBlank()
             ) {
-                Text("Add Medicine")
+                Text("Save Changes")
             }
         }
     }

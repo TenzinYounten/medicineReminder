@@ -3,45 +3,27 @@ package com.example.medicinereminder.data.repository
 import com.example.medicinereminder.data.dao.MedicineDao
 import com.example.medicinereminder.data.entity.Medicine
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filterNotNull
 
-class MedicineRepository(
-    private val medicineDao: MedicineDao
-) {
-    fun getAllMedicines(): Flow<List<Medicine>> =
-        medicineDao.getAllMedicines()
+class MedicineRepository(private val medicineDao: MedicineDao) {
 
-    fun getActiveMedicines(): Flow<List<Medicine>> =
-        medicineDao.getActiveMedicines()
-
-    suspend fun getMedicineById(id: Long): Medicine? =
-        medicineDao.getMedicineById(id)
-
-    suspend fun insertMedicine(medicine: Medicine): Long =
-        medicineDao.insert(medicine)
-
-    suspend fun updateMedicine(medicine: Medicine) =
-        medicineDao.update(medicine)
-
-    suspend fun deleteMedicine(medicine: Medicine) =
-        medicineDao.delete(medicine)
-
-    suspend fun insertOrUpdateMedicine(medicine: Medicine): Long {
-        return if (medicine.id == 0L) {
-            insertMedicine(medicine)
-        } else {
-            updateMedicine(medicine)
-            medicine.id
-        }
+    fun getAllMedicines(): Flow<List<Medicine>> {
+        return medicineDao.getAllMedicines()
     }
 
-    companion object {
-        @Volatile
-        private var instance: MedicineRepository? = null
+    fun getMedicineById(id: Long): Flow<Medicine> {
+        return medicineDao.getMedicineById(id).filterNotNull()
+    }
 
-        fun getInstance(medicineDao: MedicineDao): MedicineRepository {
-            return instance ?: synchronized(this) {
-                instance ?: MedicineRepository(medicineDao).also { instance = it }
-            }
-        }
+    suspend fun insertMedicine(medicine: Medicine): Long {
+        return medicineDao.insertMedicine(medicine)
+    }
+
+    suspend fun updateMedicine(medicine: Medicine) {
+        medicineDao.updateMedicine(medicine)
+    }
+
+    suspend fun deleteMedicine(medicine: Medicine) {
+        medicineDao.deleteMedicine(medicine)
     }
 }
