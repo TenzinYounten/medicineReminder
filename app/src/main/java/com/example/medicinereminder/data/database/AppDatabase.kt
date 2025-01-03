@@ -12,8 +12,7 @@ import com.example.medicinereminder.data.converter.Converters
 
 @Database(
     entities = [Medicine::class, Schedule::class],
-    version = 2,
-    exportSchema = false
+    version = 1
 )
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
