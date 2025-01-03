@@ -65,7 +65,10 @@ class ScheduleViewModel(
         medicineId: Long,
         time: Long,
         repeatType: RepeatType,
-        nextTriggerTime: Long
+        nextTriggerTime: Long,
+        numberOfDays: Int,
+        dailyStartTime: Long,
+        dailyEndTime: Long
     ) {
         viewModelScope.launch {
             try {
@@ -75,7 +78,11 @@ class ScheduleViewModel(
                     repeatType = repeatType,
                     isActive = true,
                     nextTriggerTime = nextTriggerTime,
-                    lastTriggeredTime = null
+                    lastTriggeredTime = null,
+                    numberOfDays = numberOfDays,
+                    dailyStartTime = dailyStartTime,
+                    dailyEndTime = dailyEndTime,
+                    scheduleStartDate = System.currentTimeMillis()
                 )
                 val id = scheduleRepository.insertSchedule(schedule)
                 val medicine = medicineRepository.getMedicineById(medicineId).firstOrNull()

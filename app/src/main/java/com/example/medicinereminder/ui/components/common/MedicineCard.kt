@@ -59,7 +59,7 @@ fun MedicineCard(
                         .fillMaxWidth()
                         .height(200.dp)
                         .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
-                        .background(Color(0xFFF5F5F5)) // Light gray background for image
+                        .background(Color(0xFFF5F5F5))
                 ) {
                     AsyncImage(
                         model = ImageRequest.Builder(LocalContext.current)
@@ -74,50 +74,66 @@ fun MedicineCard(
                 }
             }
 
-            // Medicine information section
+            // Content section
             Column(
                 modifier = Modifier
                     .padding(20.dp)
                     .fillMaxWidth()
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                // Medicine Name
+                Text(
+                    text = medicine.name,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF1A1A1A),
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Dosage in its own surface
+                Surface(
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                    shape = RoundedCornerShape(8.dp),
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
-                        text = medicine.name,
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1A1A1A),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.weight(1f)
+                        text = medicine.dosage,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
                     )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Surface(
-                        color = MaterialTheme.colorScheme.primaryContainer,
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Text(
-                            text = medicine.dosage,
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Medium,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer,
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
-                        )
-                    }
                 }
 
+                // Instructions with more space
                 medicine.instructions?.let { instructions ->
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Text(
-                        text = instructions,
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = Color(0xFF666666),
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis
-                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Surface(
+                        color = Color(0xFFF5F5F5),
+                        shape = RoundedCornerShape(8.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(12.dp)
+                        ) {
+                            Text(
+                                text = "Instructions",
+                                style = MaterialTheme.typography.labelLarge,
+                                color = Color(0xFF666666),
+                                fontWeight = FontWeight.Medium
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = instructions,
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = Color(0xFF333333),
+                                maxLines = 5,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -160,7 +176,7 @@ fun MedicineCard(
                     }
                 }
 
-                // Action buttons all in one row
+                // Action buttons
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()

@@ -1,37 +1,20 @@
 package com.example.medicinereminder.data.entity
 
-import androidx.room.*
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 
-@Entity(
-    tableName = "schedules",
-    foreignKeys = [
-        ForeignKey(
-            entity = Medicine::class,
-            parentColumns = ["id"],
-            childColumns = ["medicine_id"],
-            onDelete = ForeignKey.CASCADE
-        )
-    ],
-    indices = [Index("medicine_id")]
-)
+@Entity(tableName = "schedules")
 data class Schedule(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
-
-    @ColumnInfo(name = "medicine_id")
     val medicineId: Long,
-
     val time: Long,
     val repeatType: RepeatType,
-    val isActive: Boolean = true,
-
-    @ColumnInfo(name = "next_trigger_time")
+    val isActive: Boolean,
     val nextTriggerTime: Long,
-
-    @ColumnInfo(name = "last_triggered_time")
-    val lastTriggeredTime: Long?
+    val lastTriggeredTime: Long?,
+    val numberOfDays: Int,
+    val dailyStartTime: Long,
+    val dailyEndTime: Long,
+    val scheduleStartDate: Long
 )
-
-enum class RepeatType {
-    DAILY, WEEKLY, CUSTOM
-}

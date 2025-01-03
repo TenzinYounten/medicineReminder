@@ -5,8 +5,8 @@ import com.example.medicinereminder.data.entity.RepeatType
 
 class Converters {
     @TypeConverter
-    fun fromRepeatType(value: RepeatType): String = value.name
+    fun toRepeatType(value: String) = enumValueOf<RepeatType>(value)
 
     @TypeConverter
-    fun toRepeatType(value: String): RepeatType = RepeatType.valueOf(value)
+    fun fromRepeatType(value: RepeatType) = value.name
 }
